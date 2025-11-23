@@ -1,0 +1,5 @@
+{
+  "name": "PolyCouncil",
+  "description": "An AI aggregation tool for prediction markets. Collect responses from multiple manual sources and use a Judge AI to synthesize a final probability.",
+  "requestFramePermissions": []
+}
