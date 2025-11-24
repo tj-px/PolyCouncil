@@ -19,6 +19,7 @@ export const StepInput: React.FC<StepInputProps> = ({
   const [promptName, setPromptName] = useState('');
   const [savedPrompts, setSavedPrompts] = useState<SavedPrompt[]>([]);
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'updated'>('idle');
 
   useEffect(() => {
     const saved = localStorage.getItem('poly_saved_prompts');
@@ -53,21 +54,42 @@ export const StepInput: React.FC<StepInputProps> = ({
   const handleSavePrompt = () => {
     if (!question.trim() || !promptName.trim()) return;
     
-    const newPrompt: SavedPrompt = {
-      id: Date.now().toString(),
-      name: promptName.trim(),
-      text: question,
-      timestamp: Date.now()
-    };
+    // Check if name exists (case insensitive)
+    const existingIndex = savedPrompts.findIndex(p => p.name.trim().toLowerCase() === promptName.trim().toLowerCase());
     
-    const newPrompts = [newPrompt, ...savedPrompts];
+    let newPrompts;
+
+    if (existingIndex >= 0) {
+        // Update existing
+        newPrompts = [...savedPrompts];
+        newPrompts[existingIndex] = {
+            ...newPrompts[existingIndex],
+            text: question,
+            timestamp: Date.now()
+        };
+        setSaveStatus('updated');
+    } else {
+        // Create new
+        const newPrompt: SavedPrompt = {
+            id: Date.now().toString(),
+            name: promptName.trim(),
+            text: question,
+            timestamp: Date.now()
+        };
+        newPrompts = [newPrompt, ...savedPrompts];
+        setSaveStatus('saved');
+    }
+    
     setSavedPrompts(newPrompts);
     localStorage.setItem('poly_saved_prompts', JSON.stringify(newPrompts));
-    setPromptName('');
+    
+    // Reset status after 2 seconds
+    setTimeout(() => setSaveStatus('idle'), 2000);
   };
 
   const handleLoadPrompt = (prompt: SavedPrompt) => {
     setQuestion(prompt.text);
+    setPromptName(prompt.name); // Load name into input so user can easily overwrite
   };
 
   const handleDeletePrompt = (id: string, e: React.MouseEvent) => {
@@ -135,9 +157,15 @@ export const StepInput: React.FC<StepInputProps> = ({
              <button
                onClick={handleSavePrompt}
                disabled={!question.trim() || !promptName.trim()}
-               className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-600"
+               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                 saveStatus === 'idle' 
+                   ? 'bg-slate-700 hover:bg-slate-600 border-slate-600 text-white' 
+                   : saveStatus === 'updated'
+                     ? 'bg-purple-600 border-purple-500 text-white'
+                     : 'bg-green-600 border-green-500 text-white'
+               } disabled:opacity-50 disabled:cursor-not-allowed w-24`}
              >
-               Save
+               {saveStatus === 'idle' ? 'Save' : saveStatus === 'updated' ? 'Updated!' : 'Saved!'}
              </button>
           </div>
 

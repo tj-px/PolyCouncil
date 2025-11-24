@@ -1,13 +1,22 @@
 {
   "name": "polycouncil-offline",
   "version": "1.0.2",
+  "description": "Offline AI Analysis Workbench",
   "private": true,
+  "main": "electron/main.js",
+  "author": "PolyCouncil User",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "start": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron": "wait-on tcp:5173 && electron .",
+    "start:electron": "concurrently -k \"npm run dev\" \"npm run electron\"",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:win": "npm run build && electron-builder --win",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -21,6 +30,34 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.5.3",
-    "vite": "^5.3.4"
+    "vite": "^5.3.4",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.0",
+    "concurrently": "^8.2.0",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.polycouncil.offline",
+    "productName": "PolyCouncil",
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "public/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   }
 }

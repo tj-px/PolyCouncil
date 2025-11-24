@@ -1,42 +1,43 @@
 POLYCOUNCIL - OFFLINE WORKBENCH
 ===============================
 
-This is a local, privacy-focused tool. 
+This is a local, privacy-focused tool running as a standalone app.
 
-HOW TO RUN (RECOMMENDED METHOD)
+PREREQUISITES (macOS)
+---------------------
+1. You must have Node.js installed. 
+   - Download the "LTS" version from: https://nodejs.org/
+   - Run the installer.
+
+HOW TO BUILD THE MAC APP (.DMG)
 -------------------------------
-The most reliable way to run this app is via your computer's terminal. This avoids permission errors with shortcut files.
-
-1. Open your Terminal (Mac) or Command Prompt (Windows).
-2. Navigate to this folder.
-   (Tip: Type "cd " then drag this folder into the terminal window and press Enter)
-3. Install dependencies by typing:
+1. Open the "Terminal" app on your Mac (Cmd+Space, type "Terminal").
+2. Navigate to this folder. 
+   - Type `cd ` (with a space) and drag this folder into the terminal window, then press Enter.
+3. Install the project dependencies:
    npm install
-   (Press Enter and wait for it to finish)
-4. Start the app by typing:
-   npm run dev
-   (Press Enter)
-5. Open the Local URL shown (usually http://localhost:5173).
+4. Create the Mac application:
+   npm run dist:mac
+5. Wait for the process to finish. It will create a `release` folder in this directory.
+6. Open the `release` folder. You will see `PolyCouncil-1.0.2.dmg`.
 
-FAQ: CAN I BOOKMARK THE APP?
-----------------------------
-YES. You can bookmark http://localhost:5173 in your browser.
-HOWEVER: The Terminal window (step 4 above) MUST be running for the bookmark to work. 
-If you close the terminal, the site will stop loading.
+INSTALLING THE APP
+------------------
+1. Double-click the .dmg file.
+2. Drag PolyCouncil into your Applications folder (or just to your desktop).
+3. Eject the drive image.
 
-MAKING THE SHORTCUT (start.command) WORK
-----------------------------------------
-If you want to just double-click `start.command` instead of using the Terminal manually, you must give it permission once.
+OPENING THE APP (IMPORTANT)
+---------------------------
+Since this app is built locally and not signed by Apple ($99/year developer fee), macOS might prevent it from opening initially.
 
-1. Open Terminal.
-2. Type: chmod +x 
-   (Note the space after x)
-3. Drag the `start.command` file from your folder into the Terminal window.
-4. Press Enter.
-
-Now you should be able to double-click `start.command` to launch the app instantly.
+To open it:
+1. Right-click (or Control-click) the PolyCouncil app.
+2. Select "Open".
+3. A dialog will appear warning you about the developer. Click "Open" again.
+4. You only need to do this once. Afterward, you can double-click it normally.
 
 TROUBLESHOOTING
 ---------------
-- If `npm install` fails, ensure you have Node.js installed from https://nodejs.org/
-- If the app opens but is blank, check the Terminal window for errors.
+- If `npm install` fails, ensure Node.js is installed.
+- If the build screen stays white, ensure the `dist` folder was created during the build process.

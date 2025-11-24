@@ -19,6 +19,7 @@ export const StepCollect: React.FC<StepCollectProps> = ({
   onNext
 }) => {
   const [copySuccess, setCopySuccess] = useState('');
+  const [cleanStatus, setCleanStatus] = useState<'idle' | 'cleaning' | 'done'>('idle');
 
   const handleCopyPrompt = async () => {
     try {
@@ -28,6 +29,40 @@ export const StepCollect: React.FC<StepCollectProps> = ({
     } catch (err) {
       console.error('Failed to copy', err);
     }
+  };
+
+  const handleCutCitations = () => {
+    setCleanStatus('cleaning');
+    let changeCount = 0;
+
+    councilMembers.forEach(member => {
+      if (!member.response) return;
+
+      let text = member.response;
+
+      // 1. Remove URLs
+      // Matches http/https URLs until a space or common end-of-sentence punctuation
+      text = text.replace(/https?:\/\/[^\s\]\)]+/g, '');
+
+      // 2. Remove standard bracket citations like [1], [1, 2], [1-3]
+      // Regex looks for brackets containing numbers, commas, dashes
+      text = text.replace(/\[\s*\d+(?:[\s,-]+\d+)*\s*\]/g, '');
+
+      // 3. Remove ChatGPT style citations like 【13:0†source】
+      text = text.replace(/【.*?】/g, '');
+
+      // 4. Cleanup double spaces created by removals
+      text = text.replace(/  +/g, ' ');
+      text = text.trim();
+
+      if (text !== member.response) {
+        updateMemberResponse(member.id, text);
+        changeCount++;
+      }
+    });
+
+    setCleanStatus('done');
+    setTimeout(() => setCleanStatus('idle'), 2000);
   };
 
   const filledCount = councilMembers.filter(m => m.response.trim().length > 0).length;
@@ -79,7 +114,7 @@ export const StepCollect: React.FC<StepCollectProps> = ({
       )}
 
       {/* Council Inputs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="flex flex-col gap-6">
         {councilMembers.map((member) => (
           <div key={member.id} className={`${member.color} bg-opacity-20 border border-slate-700 rounded-xl p-4 transition-all hover:border-slate-500`}>
             <div className="flex justify-between items-center mb-3">
@@ -109,13 +144,34 @@ export const StepCollect: React.FC<StepCollectProps> = ({
         >
           Back
         </button>
-        <button
-          onClick={onNext}
-          className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-lg shadow-blue-900/20"
-        >
-          Export Responses
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-        </button>
+        
+        <div className="flex gap-3">
+          <button
+            onClick={handleCutCitations}
+            disabled={cleanStatus !== 'idle'}
+            className="bg-amber-700/50 hover:bg-amber-600 text-amber-100 border border-amber-600/50 px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 hover:shadow-lg hover:shadow-amber-900/20"
+          >
+            {cleanStatus === 'done' ? (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                Cleaned
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm8.486-8.486a5 5 0 010 7.072 5 5 0 01-7.072 0 5 5 0 010-7.072z" /></svg>
+                Cut Citations
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={onNext}
+            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-lg shadow-blue-900/20"
+          >
+            Export Responses
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </div>
       </div>
     </div>
   );
